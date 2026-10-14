@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>チーム分け診断 | 特訓コース</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Shippori+Mincho:wght@800&display=swap">
+<style>
+  :root{ --paper:#F3EEE3; --card:#FBF8F0; --ink:#2E3A32; --soft:#5B6459; --line:#D8CFBC; --acc:#9E5226; --accbg:#E7D8C4; --moss:#55644A; --mossbg:#DFE5D4; --pair:#5E4F8C; --pairbg:#E5E0F0; --warn:#8F3F2B; --warnbg:#F0DCD4; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Zen Maru Gothic","Noto Sans JP","Hiragino Maru Gothic ProN","Meiryo",sans-serif; line-height:1.8; }
+  .wrap{ max-width:760px; margin:0 auto; padding:36px 18px 90px; }
+  .kicker{ font-size:12px; letter-spacing:.18em; color:var(--soft); }
+  h1{ font-family:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif; font-weight:800; font-size:clamp(28px,6vw,38px); margin:6px 0 6px; }
+  h2{ font-size:18px; margin:30px 0 8px; }
+  .lead{ color:var(--soft); font-size:14.5px; margin:0 0 18px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:12px 0; }
+  .note{ background:var(--accbg); border-radius:12px; padding:12px 16px; font-size:14px; margin:14px 0; }
+  .warn{ background:var(--warnbg); color:var(--warn); border-radius:12px; padding:12px 16px; font-size:14px; margin:14px 0; font-weight:700; }
+  label.field{ display:block; font-weight:700; margin-bottom:6px; }
+  input[type=text], textarea{ width:100%; font:inherit; padding:10px 12px; border:1.5px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
+  textarea{ min-height:130px; resize:vertical; font-size:14px; }
+  input[type=text]:focus, textarea:focus, button:focus-visible, .scale input:focus-visible + span{ outline:3px solid var(--acc); outline-offset:2px; }
+  button{ font:inherit; font-weight:700; border:none; border-radius:24px; padding:11px 26px; cursor:pointer; background:var(--moss); color:#fff; min-height:44px; }
+  button.sub{ background:var(--card); color:var(--ink); border:1.5px solid var(--line); }
+  button:disabled{ background:#B9B6A8; cursor:not-allowed; }
+  .q{ padding:14px 16px; }
+  .q p{ margin:0 0 10px; font-size:15.5px; font-weight:700; }
+  .q .num{ color:var(--acc); margin-right:6px; }
+  .scale{ display:flex; gap:6px; align-items:center; }
+  .scale label{ flex:1; text-align:center; cursor:pointer; }
+  .scale input{ position:absolute; opacity:0; }
+  .scale span{ display:flex; align-items:center; justify-content:center; height:46px; border:1.5px solid var(--line); border-radius:12px; background:#fff; font-weight:700; }
+  .scale input:checked + span{ background:var(--moss); color:#fff; border-color:var(--moss); }
+  .ends{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--soft); margin-top:4px; }
+  .bar{ display:flex; align-items:center; gap:10px; margin:6px 0; font-size:14px; }
+  .bar b{ width:5.5em; flex:none; }
+  .bar .track{ flex:1; height:16px; background:#E8E1D0; border-radius:10px; overflow:hidden; }
+  .bar .fill{ height:100%; background:var(--moss); border-radius:10px; }
+  .bar .v{ width:3.2em; text-align:right; color:var(--soft); flex:none; }
+  .code{ font-family:Consolas,"Courier New",monospace; word-break:break-all; background:#fff; border:1.5px dashed var(--acc); border-radius:10px; padding:12px; font-size:13px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0; }
+  .tag{ display:inline-block; font-size:12px; font-weight:700; border-radius:20px; padding:1px 10px; margin-left:6px; vertical-align:middle; }
+  .tag.lead{ background:var(--warnbg); color:var(--warn); }
+  .tag.type{ background:var(--mossbg); color:var(--moss); }
+  table{ width:100%; border-collapse:collapse; font-size:14px; background:var(--card); }
+  th,td{ border:1px solid var(--line); padding:7px 8px; text-align:center; }
+  th{ background:#EDE6D6; font-size:12.5px; }
+  td.n{ text-align:left; font-weight:700; }
+  .grp{ border:2px solid var(--pair); background:var(--pairbg); }
+  .grp h3{ margin:0 0 6px; color:var(--pair); font-size:18px; }
+  .member{ background:var(--card); border-radius:10px; padding:8px 12px; margin:6px 0; }
+  .member small{ color:var(--soft); }
+  .hidden{ display:none; }
+  .foot{ font-size:12.5px; color:var(--soft); margin-top:28px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">CLAUDE CODE 特訓コース ・ 事前のお願い</div>
+  <h1>チーム分け診断</h1>
+  <p class="lead">あなたの「人柄メモ」がわかる、かんたんな診断です。結果は、後半のグループ作りにも使います。12問・3分ほどで終わります。</p>
+  <div class="note">正解も、良い悪いもありません。<b>ゆっくり深呼吸を1回</b>して、考えすぎず、いまの自分に近いものを選んでください。結果（人柄メモ）は、あなた自身と先生だけが見ます。</div>
+
+  <div class="card">
+    <label class="field" for="nick">ニックネーム（グループの人に見える名前）</label>
+    <input type="text" id="nick" maxlength="20" autocomplete="off" placeholder="例：さくら">
+  </div>
+
+  <div id="questions"></div>
+  <p id="prog" style="font-weight:700;color:var(--soft)"></p>
+  <div class="row"><button id="go" disabled>結果を見る</button></div>
+
+  <div id="result" class="hidden"></div>
+
+  <p class="foot">この診断は、グループ作りと自分を知るきっかけのための簡単なものです。医学や心理学の正式な検査ではなく、性格を決めつけたり、能力を評価したりするものではありません。気分や日によって、結果は変わることもあります。</p>
+</div>
+<script>
+const AXES = [
+  { key: "lead", name: "リード", long: "引っぱる力" },
+  { key: "idea", name: "ひらめき", long: "アイデアを出す力" },
+  { key: "care", name: "丁寧", long: "整えて仕上げる力" },
+  { key: "link", name: "つなぐ", long: "聞いて橋渡しする力" },
+];
+const TYPES = {
+  lead: { name: "引っぱる人（リード型）", text: "迷っているときに「こうしよう」と声をかけて、物事を前に進める力があります。チームのまとめ役・進行役にぴったりです。", role: "全体のまとめ役・進行役" },
+  idea: { name: "ひらめく人（アイデア型）", text: "新しい発想を出して、チームに「面白そう」を運んでくれます。まだ形のないものを思い描くのが得意です。", role: "企画・画面のデザイン案" },
+  care: { name: "整える人（しあげ型）", text: "抜けや間違いに気づき、最後まで丁寧に仕上げる力があります。チームの安心感をつくってくれます。", role: "確認・仕上げ・ルールづくり" },
+  link: { name: "つなぐ人（聞き役型）", text: "人の話をよく聞いて、意見をつなぎ、チームを居心地よく保つ力があります。", role: "連絡係・話し合いの橋渡し" },
+};
+const MAIN_INFO = {
+  lead: { core: "物事が止まっているとき、まっ先に「こうしてみよう」と言える人です。決めて進めることに抵抗が少なく、まわりも安心してついていけます。",
+    strengths: ["決断が早く、場を前に進められる", "役割や段取りを、自然と整理できる"],
+    watch: "ひとりで進めすぎると、ほかの人の考えを置いていくことがあります。「みんなはどう思う？」の一言をはさむと、もっと頼れるリーダーになります。",
+    tip: "グループでは、最初に流れを決める役や、時間を見る役が向いています。" },
+  idea: { core: "「こんなのがあったら面白いね」を、ふっと思いつける人です。まだ形のないものを思い描く力があり、チームに新しい風を運びます。",
+    strengths: ["発想が自由で、アイデアの数を出せる", "新しいやり方を試すことを楽しめる"],
+    watch: "思いつきが次々わくぶん、途中で別のことに目移りしやすい面があります。「まず、これを1つ仕上げる」と決めると、力が形になります。",
+    tip: "グループでは、作るものの案出しや、画面・見た目のアイデア役が向いています。" },
+  care: { core: "小さな抜けや間違いに気づき、最後まで丁寧に仕上げられる人です。約束や手順を大切にするので、チームの安心感のもとになります。",
+    strengths: ["確認や見直しが丁寧で、ミスを減らせる", "ルールや手順を守って、着実に進められる"],
+    watch: "完璧をめざすあまり、時間がかかったり、最初の一歩が重くなったりすることがあります。「まず7割で出してみる」と、気持ちが軽くなります。",
+    tip: "グループでは、動作チェックや、最後の仕上げ・見直し役が向いています。" },
+  link: { core: "人の話を最後まで聞き、気持ちを受けとめられる人です。意見がぶつかりそうなとき、間に入って話をつなぎ、チームを居心地よく保ちます。",
+    strengths: ["聞き上手で、みんなが話しやすくなる", "意見のちがいを、やさしくつなげられる"],
+    watch: "まわりを優先して、自分の意見を後回しにしがちです。「私はこう思う」を1回だけ言ってみると、チームがもっと豊かになります。",
+    tip: "グループでは、連絡係や、話し合いの進め役を支える役が向いています。" },
+};
+const SUB_FLAVOR = {
+  lead: "サブには「引っぱる力」があり、いざというときは自分から動けます。",
+  idea: "サブには「ひらめき」があり、行きづまったとき、別の道を思いつけます。",
+  care: "サブには「丁寧さ」があり、勢いだけで終わらせず、きちんと形にします。",
+  link: "サブには「聞く力」があり、人の気持ちにも目が届きます。",
+};
+const NICK = {
+  "lead>idea": "旗をふる冒険家", "lead>care": "頼れる現場監督", "lead>link": "みんなの船長",
+  "idea>lead": "走りだす発明家", "idea>care": "かたちにする発明家", "idea>link": "わくわくを分けあう人",
+  "care>lead": "しっかり者の司令塔", "care>idea": "工夫上手な職人", "care>link": "安心をつくる縁の下",
+  "link>lead": "やさしい舵取り", "link>idea": "ひらめきを拾う聞き上手", "link>care": "そっと支える世話役",
+};
+function levelOf(v) { return v >= 11 ? "高め" : v <= 7 ? "ゆったり" : "ふつう"; }
+function profile(s) {
+  const order = [0, 1, 2, 3].sort((a, b) => s[b] - s[a] || a - b);
+  const m = AXES[order[0]].key, b = AXES[order[1]].key, info = MAIN_INFO[m];
+  return { main: m, sub: b, nick: NICK[m + ">" + b], core: info.core, flavor: SUB_FLAVOR[b], strengths: info.strengths, watch: info.watch, tip: info.tip,
+    balanced: s[order[0]] - s[order[3]] <= 3 };
+}
+function profileText(name, s) {
+  const p = profile(s);
+  return name + "さんの人柄メモ\n" +
+    "「" + p.nick + "」（メイン：" + TYPES[p.main].name + "／サブ：" + TYPES[p.sub].name + "）\n" +
+    p.core + "\n" + p.flavor + (p.balanced ? "\n4つの力の差が小さいバランス型で、場面に合わせてどの役もこなせます。" : "") + "\n" +
+    "強み：" + p.strengths.join("、") + "\n気をつけたいこと：" + p.watch + "\nグループでの力の出し方：" + p.tip.replace(/^グループでは、/, "");
+}
+function b64enc(str) {
+  const bytes = new TextEncoder().encode(str); let bin = "";
+  bytes.forEach((b) => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function b64dec(s) {
+  s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "=";
+  const bin = atob(s); const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+function makeCode(name, scores) { return "TKP1." + b64enc(JSON.stringify({ n: name, s: scores })); }
+function parseCodes(text) {
+  const out = [], seen = new Set();
+  (text.match(/TKP1\.[A-Za-z0-9_-]+/g) || []).forEach((c) => {
+    if (seen.has(c)) return; seen.add(c);
+    try {
+      const o = JSON.parse(b64dec(c.slice(5)));
+      if (Array.isArray(o.s) && o.s.length === 4 && o.s.every((x) => Number.isInteger(x) && x >= 3 && x <= 15))
+        out.push({ name: String(o.n || "名前なし").slice(0, 20), s: o.s });
+    } catch (e) { /* ignore broken code */ }
+  });
+  return out;
+}
+function mainAxis(s) { let b = 0; for (let i = 1; i < 4; i++) if (s[i] > s[b]) b = i; return b; }
+function copyText(text, btn) {
+  const done = () => { const t = btn.textContent; btn.textContent = "コピーしました"; setTimeout(() => { btn.textContent = t; }, 1600); };
+  const fallback = () => {
+    const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch (e) { alert("コピーできませんでした。文字を選んで、手でコピーしてください。"); }
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+}
+function el(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const k in props) { if (k === "class") e.className = props[k]; else if (k.startsWith("on")) e.addEventListener(k.slice(2), props[k]); else e.setAttribute(k, props[k]); }
+  kids.flat().forEach((c) => { if (c == null) return; e.append(c.nodeType ? c : document.createTextNode(String(c))); });
+  return e;
+}
+
+const QUESTIONS = [
+  [0, "迷っている人がいると、「こうしよう」と声をかけたくなる。"],
+  [1, "「こんなのがあったら面白い」と、アイデアが浮かぶことがよくある。"],
+  [2, "作ったものを、最後まで見直して整えるのが好き。"],
+  [3, "人の話を最後まで聞いて、気持ちを受けとめるほうだ。"],
+  [0, "みんなで何かをするとき、自然とまとめ役になることが多い。"],
+  [1, "新しいやり方や、まだ誰もやっていないことを試すのが好き。"],
+  [2, "手順や約束を、きちんと守って進めたい。"],
+  [3, "意見がぶつかったとき、間に入って話をつなぎたくなる。"],
+  [0, "決まらない時間が続くより、まず決めて進めたい。"],
+  [1, "話し合いでは、まず思いついたことを自由に出したい。"],
+  [2, "小さなミスや、抜けているところに気づきやすい。"],
+  [3, "自分が前に出るより、チームが居心地よく動くことを大事にしたい。"],
+];
+const answers = new Array(QUESTIONS.length).fill(0);
+const qBox = document.getElementById("questions");
+QUESTIONS.forEach((q, i) => {
+  const scale = el("div", { class: "scale", role: "radiogroup", "aria-label": "質問" + (i + 1) });
+  for (let v = 1; v <= 5; v++) {
+    const id = "q" + i + "_" + v;
+    const inp = el("input", { type: "radio", name: "q" + i, id, value: String(v), onchange: () => { answers[i] = v; update(); } });
+    scale.append(el("label", { for: id }, inp, el("span", null, String(v))));
+  }
+  qBox.append(el("div", { class: "card q" }, el("p", null, el("span", { class: "num" }, String(i + 1) + "."), q[1]), scale,
+    el("div", { class: "ends" }, el("span", null, "1 あてはまらない"), el("span", null, "5 とてもあてはまる"))));
+});
+const nameInput = document.getElementById("nick"), btn = document.getElementById("go"), prog = document.getElementById("prog");
+function update() {
+  const n = answers.filter((a) => a > 0).length;
+  prog.textContent = "回答 " + n + " / " + QUESTIONS.length;
+  btn.disabled = !(n === QUESTIONS.length && nameInput.value.trim());
+}
+nameInput.addEventListener("input", update); update();
+btn.addEventListener("click", () => {
+  const s = [0, 0, 0, 0];
+  QUESTIONS.forEach((q, i) => { s[q[0]] += answers[i]; });
+  const name = nameInput.value.trim().slice(0, 20);
+  const m = mainAxis(s);
+  const order = [0, 1, 2, 3].sort((a, b) => s[b] - s[a] || a - b);
+  const sub = order[1];
+  const res = document.getElementById("result"); res.innerHTML = "";
+  const t = TYPES[AXES[m].key], p = profile(s);
+  res.append(el("h2", null, name + "さんの人柄メモ"));
+  res.append(el("div", { class: "card" },
+    el("div", { style: "font-size:13px;color:var(--soft)" }, "あなたのタイプ"),
+    el("h3", { style: "margin:0 0 4px;font-size:24px;color:var(--moss);font-family:'Shippori Mincho',serif" }, "「" + p.nick + "」"),
+    el("p", { style: "margin:0 0 10px;font-size:13.5px;color:var(--soft)" }, "メイン：" + t.name + "　／　サブ：" + TYPES[AXES[sub].key].name),
+    el("p", { style: "margin:0 0 8px" }, p.core),
+    el("p", { style: "margin:0 0 8px" }, p.flavor),
+    p.balanced ? el("p", { style: "margin:0;font-size:14px;color:var(--soft)" }, "4つの力の差が小さい「バランス型」でもあります。場面に合わせて、どの役もこなせる柔軟さがあります。") : null));
+  res.append(el("div", { class: "card" },
+    el("b", null, "あなたの強み"), el("ul", { style: "margin:6px 0 12px;padding-left:1.3em" }, p.strengths.map((x) => el("li", null, x))),
+    el("b", null, "気をつけたいこと・ひとこと"), el("p", { style: "margin:6px 0 12px" }, p.watch),
+    el("b", null, "グループでの力の出し方"), el("p", { style: "margin:6px 0 0" }, p.tip.replace(/^グループでは、/, ""))));
+  const bars = el("div", { class: "card" }, el("b", null, "4つの力のバランス"));
+  AXES.forEach((a, i) => bars.append(el("div", { class: "bar" }, el("b", null, a.name), el("div", { class: "track" }, el("div", { class: "fill", style: "width:" + Math.round((s[i] / 15) * 100) + "%" })), el("span", { class: "v", style: "width:5em" }, levelOf(s[i])))));
+  bars.append(el("p", { style: "margin:8px 0 0;font-size:13px;color:var(--soft)" }, "どのタイプが良い・悪いはありません。チームでは、いろいろな力がそろうと強くなります。グループは、力がバランスよくそろうように作ります。リーダー役は、「リード」が高めの人にお願いすることがあります。"));
+  res.append(bars);
+  res.append(el("div", { class: "row" }, el("button", { class: "sub", onclick: (e) => copyText(profileText(name, s), e.currentTarget) }, "人柄メモをコピー（自分用に取っておく）")));
+  const code = makeCode(name, s);
+  res.append(el("h2", null, "先生に送るコード"));
+  res.append(el("div", { class: "note" }, "下のコードを「コピー」して、グループチャットに送ってください。コードだけ送れば大丈夫です。"));
+  res.append(el("div", { class: "code", id: "codebox" }, code));
+  res.append(el("div", { class: "row" }, el("button", { onclick: (e) => copyText(code, e.currentTarget) }, "コードをコピー"), el("button", { class: "sub", onclick: () => { location.reload(); } }, "もう一度やる")));
+  res.classList.remove("hidden"); res.scrollIntoView({ behavior: "smooth" });
+});
+</script>
+</body>
+</html>
